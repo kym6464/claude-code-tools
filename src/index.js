@@ -1,17 +1,18 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
+import { inspect } from 'node:util'
 
 import spawn from 'nano-spawn'
 import RelativeTime from '@yaireo/relative-time'
 import { program } from 'commander'
-import { select } from '@inquirer/prompts'
+import { select, Separator } from '@inquirer/prompts'
 
 import { readJsonLines, truncate } from './utils.js'
 
-program.action(main).parseAsync()
+program.option('-d, --debug').action(main).parseAsync()
 
-async function main() {
+async function main({ debug }) {
   const { stdout: rootDir } = await spawn('git rev-parse --show-toplevel', {
     shell: true,
   })
@@ -30,29 +31,97 @@ async function main() {
     .filter((s) => s.endsWith('.jsonl'))
     .map((s) => path.join(projectDir, s))
 
-  const transcripts = await Promise.all(
-    transcriptFiles.map(async (transcriptFile) => {
-      const lines = await readJsonLines(transcriptFile, { limit: 2 })
+  const transcripts = []
+  for (const transcriptFile of transcriptFiles) {
+    const lines = await readJsonLines(transcriptFile, { limit: 10 })
 
-      /** @type {string} */
-      let summary
-      /** @type {{timestamp: string, sessionId: string}} */
-      let rootNode
-      if (lines[0].type === 'summary') {
-        summary = lines[0].summary
-        rootNode = lines[1]
-      } else {
-        summary = lines[0].message.content
-        rootNode = lines[0]
-      }
+    if (debug) {
+      await select({
+        message: `${path.basename(transcriptFile)}`,
+        choices: lines.flatMap((line, index) => {
+          const { summary, toolUseResult, ...meta } = line
+          const { message } = line
 
-      return {
-        sessionId: rootNode.sessionId,
-        timestamp: rootNode.timestamp,
-        summary,
-      }
-    }),
-  )
+          let { role } = message ?? {}
+
+          let description
+          let hasToolUse = false
+          if (summary) {
+            description = summary
+          } else if (typeof message.content === 'string') {
+            description = message.content
+            delete meta.message
+          } else if (Array.isArray(message.content)) {
+            const descriptionLines = []
+            for (const item of message.content) {
+              if (item.type === 'text') {
+                descriptionLines.push(item.text)
+                continue
+              }
+              if (item.type === 'tool_use') {
+                hasToolUse = true
+                descriptionLines.push(inspect(item))
+              }
+            }
+
+            if (descriptionLines.length === message.content.length) {
+              delete meta.message
+            }
+
+            description = descriptionLines.join('\n')
+          }
+
+          if (toolUseResult) {
+            description = inspect(toolUseResult)
+          }
+
+          let kind
+          if (line.isMeta) {
+            kind = 'meta'
+          } else if (
+            ['<bash-input>', '<command-name>'].some((s) =>
+              description.startsWith(s),
+            )
+          ) {
+            kind = 'command-input'
+          } else if (
+            ['<local-command-stdout>', '<bash-stdout>'].some((s) =>
+              description.startsWith(s),
+            )
+          ) {
+            kind = 'command-output'
+          } else if (toolUseResult) {
+            kind = 'tool-result'
+          } else if (hasToolUse) {
+            kind = 'tool-use'
+          }
+
+          return {
+            name: index + (role ? ` ${role}` : '') + (kind ? ` ${kind}` : ''),
+            description: description + '\n\n' + inspect(meta),
+          }
+        }),
+      })
+    }
+
+    /** @type {string} */
+    let summary
+    /** @type {{timestamp: string, sessionId: string}} */
+    let rootNode
+    if (lines[0].type === 'summary') {
+      summary = lines[0].summary
+      rootNode = lines[1]
+    } else {
+      summary = lines[0].message.content
+      rootNode = lines[0]
+    }
+
+    transcripts.push({
+      sessionId: rootNode.sessionId,
+      timestamp: rootNode.timestamp,
+      summary,
+    })
+  }
 
   transcripts.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
 
