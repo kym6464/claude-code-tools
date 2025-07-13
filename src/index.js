@@ -21,14 +21,15 @@ process.on('uncaughtException', (error) => {
 const xmlParser = new XMLParser()
 
 program
+  .option('--dry')
   .option(
-    '-d, --debug [sessionId]',
+    '--debug [sessionId]',
     'Step through each line in each file. Optionally pass a session id to focus on that specific file.',
   )
   .action(main)
   .parseAsync()
 
-async function main({ debug }) {
+async function main({ dry, debug }) {
   const { stdout: rootDir } = await spawn('git rev-parse --show-toplevel', {
     shell: true,
   })
@@ -178,6 +179,7 @@ async function main({ debug }) {
       }
 
       transcripts.push({
+        path: transcriptFile,
         sessionId: rootNode.sessionId,
         timestamp: rootNode.timestamp,
         summary,
@@ -190,7 +192,7 @@ async function main({ debug }) {
   transcripts.sort((a, b) => b.timestamp.localeCompare(a.timestamp))
 
   const relativeTime = new RelativeTime()
-  const transcript = await select({
+  const sessionId = await select({
     message: 'Select a conversation to export',
     choices: transcripts.map((transcript) => {
       const timestamp = relativeTime.from(new Date(transcript.timestamp)) + ': '
@@ -202,5 +204,25 @@ async function main({ debug }) {
       }
     }),
   })
-  console.log(transcript)
+
+  const action = await select({
+    message: 'What would you like to do?',
+    choices: [
+      { value: 'export', name: 'Export session to an HTML file' },
+      { value: 'resume', name: 'Resume session in Claude Code' },
+    ],
+  })
+
+  const sessionFile = path.join(projectDir, `${sessionId}.jsonl`)
+
+  if (action === 'export' && dry) {
+    console.log('uvx', ...['claude-code-log', '--open-browser', sessionFile])
+  } else if (action === 'export') {
+    await spawn('uvx', ['claude-code-log', '--open-browser', sessionFile])
+  }
+
+  if (action === 'resume') {
+    // I get a 'command not found' error if I try to run claude via nano-spawn
+    console.log(`claude -r "${sessionFile}"`)
+  }
 }
