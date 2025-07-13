@@ -21,7 +21,7 @@ Once you've selected a session, you can either:
 
 ## Demo
 
-![demo video](./demo.webm)
+![demo video](./demo.mp4)
 
 ## Instructions
 
