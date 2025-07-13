@@ -194,10 +194,10 @@ async function main({ debug }) {
     message: 'Select a conversation to export',
     choices: transcripts.map((transcript) => {
       const timestamp = relativeTime.from(new Date(transcript.timestamp)) + ': '
+      const summary = transcript.summary.replaceAll(/\s+/g, ' ')
       return {
         name:
-          timestamp +
-          truncate(transcript.summary, { maxLength: 80 - timestamp.length }),
+          timestamp + truncate(summary, { maxLength: 80 - timestamp.length }),
         value: transcript.sessionId,
       }
     }),
