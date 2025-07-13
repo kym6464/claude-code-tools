@@ -13,7 +13,7 @@ Once you've selected a session, you can either:
 
 - Export the session to an HTML file ([#323](https://github.com/anthropics/claude-code/issues/323))
 
-  > This feature utilizes [daaain/claude-code-log](https://github.com/daaain/claude-code-log)
+  > This feature utilizes [daaain/claude-code-log](https://github.com/daaain/claude-code-log) and I [reached out to the author](https://github.com/daaain/claude-code-log/issues/6)
 
 - Resume the session in Claude Code
 
