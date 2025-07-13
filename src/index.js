@@ -18,7 +18,10 @@ process.on('uncaughtException', (error) => {
 })
 
 program
-  .option('-d, --debug', 'Step through each line in each file')
+  .option(
+    '-d, --debug [sessionId]',
+    'Step through each line in each file. Optionally pass a session id to focus on that specific file.',
+  )
   .action(main)
   .parseAsync()
 
@@ -36,10 +39,14 @@ async function main({ debug }) {
     program.error(`Failed to find Claude Code project directory ${projectDir}`)
   }
 
-  const transcriptFiles = fs
+  let transcriptFiles = fs
     .readdirSync(projectDir)
     .filter((s) => s.endsWith('.jsonl'))
     .map((s) => path.join(projectDir, s))
+
+  if (debug && typeof debug === 'string') {
+    transcriptFiles = transcriptFiles.filter((e) => e.includes(debug))
+  }
 
   const transcripts = []
   for (const transcriptFile of transcriptFiles) {
