@@ -34,3 +34,12 @@ TUI wrapper around [Claude Code Log](https://github.com/daaain/claude-code-log)
      node ~/repos/claude-code-export/src/index.js "$@"
    }
    ```
+
+## Development
+
+Run `npm install` and then invoke `node src/index.js`.
+
+- Pass `--debug` to review session files
+- Pass `--debug <sessionId>` to review a particular session file
+
+The code could definitely use an overhaul, but before that can happen we need to write tests. I've decided to kick the can down the road since it works fine for now.
