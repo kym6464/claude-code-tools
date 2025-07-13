@@ -6,11 +6,21 @@ import { inspect } from 'node:util'
 import spawn from 'nano-spawn'
 import RelativeTime from '@yaireo/relative-time'
 import { program } from 'commander'
-import { select, Separator } from '@inquirer/prompts'
+import { select } from '@inquirer/prompts'
 
 import { readJsonLines, truncate } from './utils.js'
 
-program.option('-d, --debug').action(main).parseAsync()
+process.on('uncaughtException', (error) => {
+  if (error instanceof Error && error.name === 'ExitPromptError') {
+    return
+  }
+  throw error
+})
+
+program
+  .option('-d, --debug', 'Step through each line in each file')
+  .action(main)
+  .parseAsync()
 
 async function main({ debug }) {
   const { stdout: rootDir } = await spawn('git rev-parse --show-toplevel', {
@@ -35,85 +45,97 @@ async function main({ debug }) {
   for (const transcriptFile of transcriptFiles) {
     const lines = await readJsonLines(transcriptFile, { limit: 10 })
 
+    /** @type {string | undefined} */
+    let conversationSummary
+
+    const choices = lines.flatMap((line, index) => {
+      const { summary, toolUseResult, ...meta } = line
+      const { message } = line
+
+      let { role } = message ?? {}
+
+      let description
+      let hasToolUse = false
+      if (summary) {
+        description = summary
+      } else if (typeof message.content === 'string') {
+        description = message.content
+        delete meta.message
+      } else if (Array.isArray(message.content)) {
+        const descriptionLines = []
+        for (const item of message.content) {
+          if (item.type === 'text') {
+            descriptionLines.push(item.text)
+            continue
+          }
+          if (item.type === 'tool_use') {
+            hasToolUse = true
+            descriptionLines.push(inspect(item))
+          }
+        }
+
+        if (descriptionLines.length === message.content.length) {
+          delete meta.message
+        }
+
+        description = descriptionLines.join('\n')
+      }
+
+      if (toolUseResult) {
+        description = inspect(toolUseResult)
+      }
+
+      let kind
+      if (line.isMeta) {
+        kind = 'meta'
+      } else if (
+        ['<bash-input>', '<command-name>'].some((s) =>
+          description.startsWith(s),
+        )
+      ) {
+        kind = 'command-input'
+      } else if (
+        ['<local-command-stdout>', '<bash-stdout>'].some((s) =>
+          description.startsWith(s),
+        )
+      ) {
+        kind = 'command-output'
+      } else if (toolUseResult) {
+        kind = 'tool-result'
+      } else if (hasToolUse) {
+        kind = 'tool-use'
+      }
+
+      if (!conversationSummary && !kind && role === 'user') {
+        conversationSummary = description
+      }
+
+      return {
+        name: index + (role ? ` ${role}` : '') + (kind ? ` ${kind}` : ''),
+        description: description + '\n\n' + inspect(meta),
+      }
+    })
+
     if (debug) {
       await select({
         message: `${path.basename(transcriptFile)}`,
-        choices: lines.flatMap((line, index) => {
-          const { summary, toolUseResult, ...meta } = line
-          const { message } = line
-
-          let { role } = message ?? {}
-
-          let description
-          let hasToolUse = false
-          if (summary) {
-            description = summary
-          } else if (typeof message.content === 'string') {
-            description = message.content
-            delete meta.message
-          } else if (Array.isArray(message.content)) {
-            const descriptionLines = []
-            for (const item of message.content) {
-              if (item.type === 'text') {
-                descriptionLines.push(item.text)
-                continue
-              }
-              if (item.type === 'tool_use') {
-                hasToolUse = true
-                descriptionLines.push(inspect(item))
-              }
-            }
-
-            if (descriptionLines.length === message.content.length) {
-              delete meta.message
-            }
-
-            description = descriptionLines.join('\n')
-          }
-
-          if (toolUseResult) {
-            description = inspect(toolUseResult)
-          }
-
-          let kind
-          if (line.isMeta) {
-            kind = 'meta'
-          } else if (
-            ['<bash-input>', '<command-name>'].some((s) =>
-              description.startsWith(s),
-            )
-          ) {
-            kind = 'command-input'
-          } else if (
-            ['<local-command-stdout>', '<bash-stdout>'].some((s) =>
-              description.startsWith(s),
-            )
-          ) {
-            kind = 'command-output'
-          } else if (toolUseResult) {
-            kind = 'tool-result'
-          } else if (hasToolUse) {
-            kind = 'tool-use'
-          }
-
-          return {
-            name: index + (role ? ` ${role}` : '') + (kind ? ` ${kind}` : ''),
-            description: description + '\n\n' + inspect(meta),
-          }
-        }),
+        choices,
       })
     }
 
-    /** @type {string} */
-    let summary
+    /** @type {string | undefined} */
+    let summary = ''
     /** @type {{timestamp: string, sessionId: string}} */
     let rootNode
     if (lines[0].type === 'summary') {
       summary = lines[0].summary
       rootNode = lines[1]
     } else {
-      summary = lines[0].message.content
       rootNode = lines[0]
+    }
+
+    if (!summary && conversationSummary) {
+      summary = conversationSummary
     }
 
     transcripts.push({
@@ -129,15 +151,12 @@ async function main({ debug }) {
   const transcript = await select({
     message: 'Select a conversation to export',
     choices: transcripts.map((transcript) => {
-      const timestamp =
-        ' (' + relativeTime.from(new Date(transcript.timestamp)) + ')'
-      const name =
-        truncate(transcript.summary, { maxLength: 80 - timestamp.length }) +
-        timestamp
+      const timestamp = relativeTime.from(new Date(transcript.timestamp)) + ': '
       return {
-        name: truncate(name, { maxLength: 80 }),
+        name:
+          timestamp +
+          truncate(transcript.summary, { maxLength: 80 - timestamp.length }),
         value: transcript.sessionId,
-        description: transcript.summary,
       }
     }),
   })
