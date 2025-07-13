@@ -7,6 +7,7 @@ import spawn from 'nano-spawn'
 import RelativeTime from '@yaireo/relative-time'
 import { program } from 'commander'
 import { select } from '@inquirer/prompts'
+import { XMLParser, XMLValidator } from 'fast-xml-parser'
 
 import { readJsonLines, truncate } from './utils.js'
 
@@ -16,6 +17,8 @@ process.on('uncaughtException', (error) => {
   }
   throw error
 })
+
+const xmlParser = new XMLParser()
 
 program
   .option(
@@ -69,10 +72,28 @@ async function main({ debug }) {
         let hasToolUse = false
         if (summary) {
           description = summary
-        } else if (typeof message.content === 'string') {
+        }
+
+        if (
+          !description &&
+          role === 'user' &&
+          typeof message.content === 'string' &&
+          XMLValidator.validate(message.content)
+        ) {
+          const content = xmlParser.parse(message.content)
+          if (content['command-name'] && content['command-args']) {
+            description =
+              content['command-name'] + ' ' + content['command-args']
+          }
+          delete meta.message
+        }
+
+        if (!description && typeof message.content === 'string') {
           description = message.content
           delete meta.message
-        } else if (Array.isArray(message.content)) {
+        }
+
+        if (!description && Array.isArray(message.content)) {
           const descriptionLines = []
           for (const item of message.content) {
             if (item.type === 'text') {
@@ -92,7 +113,7 @@ async function main({ debug }) {
           description = descriptionLines.join('\n')
         }
 
-        if (toolUseResult) {
+        if (!description && toolUseResult) {
           description = inspect(toolUseResult)
         }
 
