@@ -11,8 +11,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@yaireo/relative-time": "^1.0.5",
     "commander": "^14.0.0",
-    "inquirer": "^12.7.0"
+    "inquirer": "^12.7.0",
+    "nano-spawn": "^1.0.2"
   },
   "prettier": {
     "semi": false,
