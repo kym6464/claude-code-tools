@@ -21,7 +21,7 @@ Once you've selected a session, you can either:
 
 ## Demo
 
-<video src="./demo.mp4" controls></video>
+[demo.webm](https://github.com/user-attachments/assets/75d64b3b-1a5b-4f4e-b1aa-68bea4e43a90)
 
 ## Instructions
 
