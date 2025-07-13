@@ -223,6 +223,6 @@ async function main({ dry, debug }) {
 
   if (action === 'resume') {
     // I get a 'command not found' error if I try to run claude via nano-spawn
-    console.log(`claude -r "${sessionFile}"`)
+    console.log(`claude -r ${sessionId}`)
   }
 }
