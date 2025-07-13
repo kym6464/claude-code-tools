@@ -1,4 +1,4 @@
-# claude-wishlist
+# claude-code-tools
 
 This repo contains tools that I wish were built in to [Claude Code](https://claude.ai/code)
 
@@ -25,11 +25,13 @@ Once you've selected a session, you can either:
 
 ## Instructions
 
+1. Install [node](https://nodejs.org/en)
+
 1. Install [uv](https://docs.astral.sh/uv/)
 
-2. Run `uvx pycowsay hello world` to ensure `uv` is working correctly
+1. Run `uvx pycowsay hello world` to ensure `uv` is working correctly
 
-3. Run `npm install` in this directory
+1. Run `npm install` in this directory
 
    ```
    kamalmuradov@kym ~ % uvx pycowsay hello world
@@ -44,11 +46,11 @@ Once you've selected a session, you can either:
              ||     ||
    ```
 
-4. Add this function to your `.rc` file:
+1. Add this function to your `.rc` file:
 
    ```bash
-   claude-wishlist() {
-     node ~/repos/claude-wishlist/src/index.js "$@"
+   claude-tools() {
+     node ~/repos/claude-code-tools/src/index.js "$@"
    }
    ```
 
