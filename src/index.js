@@ -3,6 +3,7 @@ import path from 'node:path'
 import os from 'node:os'
 import { inspect } from 'node:util'
 
+import clipboard from 'clipboardy'
 import spawn from 'nano-spawn'
 import RelativeTime from '@yaireo/relative-time'
 import { program } from 'commander'
@@ -221,8 +222,11 @@ async function main({ dry, debug }) {
     await spawn('uvx', ['claude-code-log', '--open-browser', sessionFile])
   }
 
-  if (action === 'resume') {
+  if (action === 'resume' && dry) {
     // I get a 'command not found' error if I try to run claude via nano-spawn
     console.log(`claude -r ${sessionId}`)
+  } else if (action === 'resume') {
+    clipboard.writeSync(`claude -r ${sessionId}`)
+    console.log(`Command copied to your clipboard!`)
   }
 }

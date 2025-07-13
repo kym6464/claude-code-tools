@@ -1,6 +1,23 @@
-# claude-code-export
+# claude-wishlist
 
-TUI wrapper around [Claude Code Log](https://github.com/daaain/claude-code-log)
+This repo contains tools that I wish were built in to [Claude Code](https://claude.ai/code)
+
+## Features
+
+Easily identify old sessions ([#1407](https://github.com/anthropics/claude-code/issues/1407))
+
+- Uses the Claude-generated summary if one exists,
+- Falls back to 1st user-written message to jog your memory
+
+Once you've selected a session, you can either:
+
+- Export the session to an HTML file ([#323](https://github.com/anthropics/claude-code/issues/323))
+
+  > This feature utilizes [daaain/claude-code-log](https://github.com/daaain/claude-code-log)
+
+- Resume the session in Claude Code
+
+  > Copies a command to your clipboard that you then have to paste + execute
 
 ## Demo
 
@@ -30,8 +47,8 @@ TUI wrapper around [Claude Code Log](https://github.com/daaain/claude-code-log)
 4. Add this function to your `.rc` file:
 
    ```bash
-   claude-export() {
-     node ~/repos/claude-code-export/src/index.js "$@"
+   claude-wishlist() {
+     node ~/repos/claude-wishlist/src/index.js "$@"
    }
    ```
 
