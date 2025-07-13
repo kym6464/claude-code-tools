@@ -21,7 +21,7 @@ Once you've selected a session, you can either:
 
 ## Demo
 
-![demo video](./demo.mp4)
+[demo video](https://github.com/user-attachments/assets/01404dcf-aaf2-4b63-87b3-a6ab36bcf47c)
 
 ## Instructions
 
