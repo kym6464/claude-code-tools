@@ -223,9 +223,9 @@ async function main({ dry, debug }) {
   }
 
   if (action === 'resume' && dry) {
-    // I get a 'command not found' error if I try to run claude via nano-spawn
     console.log(`claude -r ${sessionId}`)
   } else if (action === 'resume') {
+    // Workaround to 'command not found' error when running claude via nano-spawn
     clipboard.writeSync(`claude -r ${sessionId}`)
     console.log(`Command copied to your clipboard!`)
   }
