@@ -1,20 +1,20 @@
 claude-export() {
-    # Get git root directory
-    ROOT_DIR=$(git rev-parse --show-toplevel 2>/dev/null)
-    if [ $? -ne 0 ] || [ ! -d "$ROOT_DIR" ]; then
-        echo "Warning: Not in a git repository, launching without project directory" >&2
-        uvx claude-code-log --tui "$@"
-        return
-    fi
+  # Get git root directory
+  ROOT_DIR=$(git rev-parse --show-toplevel 2>/dev/null)
+  if [ $? -ne 0 ] || [ ! -d "$ROOT_DIR" ]; then
+    echo "Warning: Not in a git repository, launching without project directory" >&2
+    uvx claude-code-log --tui "$@"
+    return
+  fi
 
-    # Generate project name and directory
-    PROJECT_NAME=$(echo "$ROOT_DIR" | tr '/' '-')
-    PROJECT_DIR="$HOME/.claude/projects/$PROJECT_NAME"
+  # Generate project name and directory
+  PROJECT_NAME=$(echo "$ROOT_DIR" | tr '/' '-')
+  PROJECT_DIR="$HOME/.claude/projects/$PROJECT_NAME"
 
-    if [ ! -d "$PROJECT_DIR" ]; then
-        echo "Warning: Project directory $PROJECT_DIR not found, launching without project directory" >&2
-        uvx claude-code-log --tui "$@"
-    else
-        uvx claude-code-log --tui "$PROJECT_DIR" "$@"
-    fi
+  if [ ! -d "$PROJECT_DIR" ]; then
+    echo "Warning: Project directory $PROJECT_DIR not found, launching without project directory" >&2
+    uvx claude-code-log --tui "$@"
+  else
+    uvx claude-code-log --tui "$PROJECT_DIR" "$@"
+  fi
 }
