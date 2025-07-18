@@ -4,20 +4,15 @@ This repo contains tools that I wish were built in to [Claude Code](https://clau
 
 ## Features
 
-Easily identify old sessions ([#1407](https://github.com/anthropics/claude-code/issues/1407))
+Auto-detects your current Claude Code project directory and launches the TUI from [daaain/claude-code-log](https://github.com/daaain/claude-code-log)
 
-- Uses the Claude-generated summary if one exists,
-- Falls back to 1st user-written message to jog your memory
+This simple wrapper:
 
-Once you've selected a session, you can either:
+- Detects the git root directory of your current project
+- Converts it to Claude Code's project naming convention (`/path/to/project` → `~/.claude/projects/-path-to-project`)
+- Launches `claude-code-log --tui` with the correct project directory
 
-- Export the session to an HTML file ([#323](https://github.com/anthropics/claude-code/issues/323))
-
-  > This feature utilizes [daaain/claude-code-log](https://github.com/daaain/claude-code-log) and I [reached out to the author](https://github.com/daaain/claude-code-log/issues/6)
-
-- Resume the session in Claude Code
-
-  > Copies a command to your clipboard that you then have to paste + execute
+> All session browsing, exporting, and management functionality is provided by claude-code-log
 
 ## Demo
 
@@ -50,15 +45,10 @@ Once you've selected a session, you can either:
 
    ```bash
    claude-tools() {
-     node ~/repos/claude-code-tools/src/index.js "$@"
+     $(node ~/repos/claude-code-tools/src/index.js "$@")
    }
    ```
 
 ## Development
 
 Run `npm install` and then invoke `node src/index.js`.
-
-- Pass `--debug` to review session files
-- Pass `--debug <sessionId>` to review a particular session file
-
-The code could definitely use an overhaul, but before that can happen we need to write tests. I've decided to kick the can down the road since it works fine for now.
