@@ -16,7 +16,7 @@ This simple wrapper:
 
 ## Demo
 
-[demo video](https://github.com/user-attachments/assets/01404dcf-aaf2-4b63-87b3-a6ab36bcf47c)
+[demo video](https://github.com/user-attachments/assets/659e8472-3c28-41af-b7b5-af2e752c31fa)
 
 ## Instructions
 
