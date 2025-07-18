@@ -13,7 +13,7 @@ A simple bash function that:
 
 ## Demo
 
-[demo video](https://github.com/user-attachments/assets/fa18ff82-2d3f-4742-825b-74b10a7924a6)
+[demo video](https://github.com/user-attachments/assets/50600ef8-4958-44eb-8527-876957618939)
 
 ## Instructions
 
