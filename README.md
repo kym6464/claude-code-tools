@@ -1,18 +1,15 @@
 # claude-code-tools
 
-This repo contains tools that I wish were built in to [Claude Code](https://claude.ai/code)
+A bash wrapper for [claude-code-log](https://github.com/daaain/claude-code-log) that auto-detects your current Claude Code project directory.
 
 ## Features
 
-Auto-detects your current Claude Code project directory and launches the TUI from [daaain/claude-code-log](https://github.com/daaain/claude-code-log)
-
-This simple wrapper:
+A simple bash function that:
 
 - Detects the git root directory of your current project
 - Converts it to Claude Code's project naming convention (`/path/to/project` → `~/.claude/projects/-path-to-project`)
 - Launches `claude-code-log --tui` with the correct project directory
-
-> All session browsing, exporting, and management functionality is provided by claude-code-log
+- Falls back to launching without project directory (the default behavior) if anything goes wrong
 
 ## Demo
 
@@ -20,13 +17,9 @@ This simple wrapper:
 
 ## Instructions
 
-1. Install [node](https://nodejs.org/en)
-
 1. Install [uv](https://docs.astral.sh/uv/)
 
-1. Run `uvx pycowsay hello world` to ensure `uv` is working correctly
-
-1. Run `npm install` in this directory
+2. Run `uvx pycowsay hello world` to ensure `uv` is working correctly
 
    ```
    kamalmuradov@kym ~ % uvx pycowsay hello world
@@ -41,14 +34,6 @@ This simple wrapper:
              ||     ||
    ```
 
-1. Add this function to your `.rc` file:
+3. Copy + paste the [claude-export](./claude-export) function into your `.rc` file
 
-   ```bash
-   claude-tools() {
-     $(node ~/repos/claude-code-tools/src/index.js "$@")
-   }
-   ```
-
-## Development
-
-Run `npm install` and then invoke `node src/index.js`.
+4. Run `claude-export` from a directory in which you've run `claude`
