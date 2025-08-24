@@ -1,3 +1,6 @@
+> [!NOTE]
+> This repository has been archived in favor of [daaain/claude-code-log](https://github.com/daaain/claude-code-log)
+
 # claude-code-tools
 
 A bash wrapper for [claude-code-log](https://github.com/daaain/claude-code-log) that auto-detects your current Claude Code project directory.
